@@ -1,4 +1,3 @@
-secrets
 flask
 flask_cors
 dotenv
