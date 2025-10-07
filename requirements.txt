@@ -1,0 +1,6 @@
+secrets
+flask
+flask_cors
+dotenv
+bs4
+openai
