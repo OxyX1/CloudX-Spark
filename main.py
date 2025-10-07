@@ -23,9 +23,151 @@ MAX_REQUESTS = 5
 VECTOR_DB_PATH = "./vector_db.json"  # simple local storage
 # ----------------
 
+# ---- INITIAL VECTOR DB CONTENT ----
+vector_db = []
+
+vector_db.append({
+    "content": """
+<!-- NAVBAR -->
+<nav class="flex justify-between items-center p-4 bg-white shadow-md">
+  <a href="#" class="text-xl font-bold text-gray-800">Brand</a>
+  <ul class="flex space-x-4">
+    <li><a href="#" class="text-gray-600 hover:text-gray-900">Home</a></li>
+    <li><a href="#" class="text-gray-600 hover:text-gray-900">Portfolio</a></li>
+    <li><a href="#" class="text-gray-600 hover:text-gray-900">Contact</a></li>
+  </ul>
+</nav>
+""",
+    "description": "Clean responsive navbar example"
+})
+
+vector_db.append({
+    "content": """
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+""",
+    "description": "CSS utility for truncating text with ellipsis"
+})
+
+vector_db.append({
+    "content": """
+<!-- Modern Glassy Navbar -->
+<nav class="flex items-center justify-between px-6 py-3 bg-[rgba(255,255,255,0.1)] backdrop-blur-md border border-[rgba(255,255,255,0.15)] rounded-2xl shadow-lg">
+  <h1 class="text-xl font-bold text-white">CloudX</h1>
+  <ul class="flex space-x-6 text-gray-200">
+    <li><a href="#" class="hover:text-white transition">Home</a></li>
+    <li><a href="#" class="hover:text-white transition">Projects</a></li>
+    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+  </ul>
+  <button class="px-4 py-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition">Sign In</button>
+</nav>
+""",
+    "description": "Glassy translucent navbar"
+})
+
+vector_db.append({
+    "content": """
+html {
+  scroll-behavior: smooth;
+}
+""",
+    "description": "Smooth scrolling behavior"
+})
+
+vector_db.append({
+    "content": """
+<!-- Project Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+  <div class="bg-[#1e293b] rounded-2xl p-5 hover:scale-105 transition shadow-md">
+    <img src="project1.jpg" alt="Project 1" class="rounded-lg mb-3 w-full">
+    <h3 class="text-xl font-semibold text-white">AI Chat Assistant</h3>
+    <p class="text-gray-400 text-sm mt-2">A modern AI chatbot built with Flask and OpenAI.</p>
+  </div>
+  <div class="bg-[#1e293b] rounded-2xl p-5 hover:scale-105 transition shadow-md">
+    <img src="project2.jpg" alt="Project 2" class="rounded-lg mb-3 w-full">
+    <h3 class="text-xl font-semibold text-white">CloudX Dashboard</h3>
+    <p class="text-gray-400 text-sm mt-2">A clean, interactive analytics dashboard with Tailwind UI.</p>
+  </div>
+</section>
+""",
+    "description": "Responsive project grid with hover effects"
+})
+
+vector_db.append({
+    "content": """
+<!-- Hero Section -->
+<section class="flex flex-col items-center justify-center text-center py-24 px-6 bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white">
+  <h1 class="text-5xl font-bold mb-4">Hey, I’m <span class="text-blue-400">Oxyus</span></h1>
+  <p class="text-lg max-w-xl mb-6 text-gray-300">A passionate developer crafting experiences through code, design, and innovation.</p>
+  <button class="px-6 py-3 bg-blue-500 rounded-xl font-medium hover:bg-blue-600 transition">View My Work</button>
+</section>
+""",
+    "description": "Hero section for portfolio homepage"
+})
+
+vector_db.append({
+    "content": """
+<!-- Contact Form -->
+<section class="max-w-lg mx-auto bg-[#111827] p-8 rounded-2xl shadow-lg border border-gray-800">
+  <h2 class="text-2xl font-semibold text-white mb-6">Let’s Connect</h2>
+  <form class="flex flex-col space-y-4">
+    <input type="text" placeholder="Name" class="p-3 rounded-lg bg-[#1f2937] text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none" />
+    <input type="email" placeholder="Email" class="p-3 rounded-lg bg-[#1f2937] text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none" />
+    <textarea placeholder="Your message..." rows="4" class="p-3 rounded-lg bg-[#1f2937] text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+    <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Send Message</button>
+  </form>
+</section>
+""",
+    "description": "Dark-themed contact form layout"
+})
+
+vector_db.append({
+    "content": """
+:root {
+  --accent: #3b82f6;
+  --bg-dark: #0f172a;
+  --text-light: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+""",
+    "description": "Global modern UI theme variables and hover effects"
+})
+
+
 SYSTEM_PROMPT = """You are CloudX, a god-tier coding assistant.
 Think deeply **only for technical tasks** (coding, math, logic), but never reveal internal reasoning.
 For casual chat, reply naturally.
+
+For web design tasks:
+- Use modern layouts (flexbox/grid).
+- Maintain consistent padding/margins (1–2rem).
+- Use `Inter`, `Poppins`, or `JetBrains Mono` fonts.
+- Always apply hover states to buttons and cards.
+- Ensure responsiveness and balanced spacing.
+
 
 RULES FOR GUI DESIGN:
 - Prefer minimal, functional layouts.
