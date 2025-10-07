@@ -156,34 +156,133 @@ button:hover {
     "description": "Global modern UI theme variables and hover effects"
 })
 
+vector_db.append({
+    "content": """
+<!-- Footer -->
+<footer class="bg-[#0f172a] text-gray-400 py-8 mt-16 border-t border-gray-800">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center px-6">
+    <p class="text-sm">&copy; 2025 Oxyus. All rights reserved.</p>
+    <div class="flex space-x-4 mt-4 md:mt-0">
+      <a href="#" class="hover:text-blue-400 transition"><i class="material-icons">facebook</i></a>
+      <a href="#" class="hover:text-blue-400 transition"><i class="material-icons">twitter</i></a>
+      <a href="#" class="hover:text-blue-400 transition"><i class="material-icons">github</i></a>
+    </div>
+  </div>
+</footer>
+""",
+    "description": "Modern responsive footer with social icons"
+})
 
-SYSTEM_PROMPT = """You are CloudX, a god-tier coding assistant.
-Think deeply **only for technical tasks** (coding, math, logic), but never reveal internal reasoning.
-For casual chat, reply naturally.
+vector_db.append({
+    "content": """
+<!-- Glassmorphic Card Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 p-10 backdrop-blur-md">
+  <div class="bg-white/10 border border-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
+    <h3 class="text-xl font-semibold text-white mb-2">Fast Performance</h3>
+    <p class="text-gray-300 text-sm">Optimized for speed and seamless interaction.</p>
+  </div>
+  <div class="bg-white/10 border border-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
+    <h3 class="text-xl font-semibold text-white mb-2">Responsive Design</h3>
+    <p class="text-gray-300 text-sm">Looks great on every screen size and device.</p>
+  </div>
+  <div class="bg-white/10 border border-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
+    <h3 class="text-xl font-semibold text-white mb-2">Modern Aesthetics</h3>
+    <p class="text-gray-300 text-sm">Clean, minimal, and user-focused design.</p>
+  </div>
+</section>
+""",
+    "description": "Glassmorphic feature card grid"
+})
 
-For web design tasks:
-- Use modern layouts (flexbox/grid).
-- Maintain consistent padding/margins (1–2rem).
-- Use `Inter`, `Poppins`, or `JetBrains Mono` fonts.
-- Always apply hover states to buttons and cards.
-- Ensure responsiveness and balanced spacing.
+vector_db.append({
+    "content": """
+<!-- Feature Section -->
+<section class="bg-white text-gray-800 py-20 px-6">
+  <div class="max-w-5xl mx-auto text-center">
+    <h2 class="text-4xl font-bold mb-8">What Makes Me Different</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold mb-3">Creative UI</h3>
+        <p class="text-gray-600">Every layout is designed with attention to balance and flow.</p>
+      </div>
+      <div class="p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold mb-3">Fast Execution</h3>
+        <p class="text-gray-600">I optimize for performance and accessibility on every build.</p>
+      </div>
+      <div class="p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold mb-3">Adaptive Design</h3>
+        <p class="text-gray-600">Everything scales perfectly across devices and themes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+""",
+    "description": "Light-themed feature showcase section"
+})
+
+vector_db.append({
+    "content": """
+<!-- Animated Gradient Header -->
+<header class="relative py-20 text-center overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x"></div>
+  <div class="relative z-10 text-white">
+    <h1 class="text-6xl font-extrabold mb-4">Welcome to <span class="text-yellow-300">CloudX</span></h1>
+    <p class="text-xl opacity-90">Crafting futuristic interfaces, one pixel at a time.</p>
+  </div>
+</header>
+
+<style>
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 6s ease infinite;
+}
+</style>
+""",
+    "description": "Animated gradient hero section"
+})
+
+session["messages"].append({
+  "role": "system",
+  "content": "Refer to previously learned UI layouts for structure and Tailwind design language."
+})
 
 
-RULES FOR GUI DESIGN:
-- Prefer minimal, functional layouts.
-- Avoid unnecessary wrappers or divs.
-- Use modern styling and spacing.
-- Use semantic names for IDs/classes.
-- Prioritize readability and maintainability.
-- Make components reusable.
-- Show only what is necessary.
+SYSTEM_PROMPT = """
+You are CloudX — a god-tier coding assistant.
 
+Think deeply only for technical tasks (code, math, logic).  
+Respond naturally for casual chat.
 
-Use Markdown formatting for code snippets and structured responses.
-Use triple backticks for code blocks and inline code for short snippets.
-Keep replies concise, clear, and professional.
-End reasoning with RESEARCH_QUERY: <query or NONE> if external info is needed.
+For web design:
+- Use clean, modern layouts (Flexbox/Grid).
+- Keep consistent spacing (1–2rem).
+- Fonts: Inter, Poppins, or JetBrains Mono.
+- Always responsive and balanced.
+- Buttons/cards must have hover states.
+- Favor readability, minimalism, and reusability.
+
+GUI RULES:
+- Rounded-xl/2xl edges, subtle shadows.
+- Use Tailwind for styling.
+- Dark: bg-[#0f172a], text-gray-200.
+- Light: bg-white, text-gray-800.
+- Add gradients (from-slate-900 → slate-800) and depth.
+- Titles ≥ text-4xl, paragraphs base–lg.
+- Prefer SVG or Lucide icons.
+- Use semantic tags (header, section, footer, nav).
+
+Code output:
+- Use ```html / ```css blocks.
+- No inline styles.
+- Clean indentation and closed tags.
+
+Keep replies concise, modern, and professional.
 """
+
 
 sessions = {}  # {token: {"messages": [...], "timestamps": [...], "memory": []}}
 
