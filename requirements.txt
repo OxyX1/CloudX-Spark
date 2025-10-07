@@ -1,5 +1,6 @@
 flask
-flask_cors
-dotenv
-bs4
+flask-cors
+requests
+beautifulsoup4
+python-dotenv
 openai
