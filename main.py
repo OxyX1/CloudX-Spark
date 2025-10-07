@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, re, requests, time, secrets
+import os, re, time, secrets, json, requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -14,12 +14,13 @@ CORS(app)
 
 # ---- CONFIG ----
 MODEL = "gpt-4o-mini"
-TEMP = 0.15
-MAX_TOKENS = 900
-SEARCH_RESULTS_COUNT = 5
+TEMP = 0.2
+MAX_TOKENS = 1200
 SELF_REFINE_PASSES = 1
+SEARCH_RESULTS_COUNT = 5
 RATE_LIMIT_WINDOW = 15  # seconds
 MAX_REQUESTS = 5
+VECTOR_DB_PATH = "./vector_db.json"  # simple local storage
 # ----------------
 
 SYSTEM_PROMPT = """You are CloudX, a god-tier coding assistant.
@@ -29,6 +30,14 @@ If the user is just chatting or asking something simple, reply normally without 
 
 When reasoning internally, never show your thought process — only output the final, polished answer in **Markdown** format.
 
+Behave like ChatGPT-5: concise, clear, friendly, reasoning in multiple steps when needed.
+
+Use Markdown formatting for code snippets and structured responses.
+
+If unsure, provide well-reasoned hypotheses.
+
+Always think step-by-step before answering complex problems.
+
 If you need external info, end your private reasoning with:
 RESEARCH_QUERY: <query or NONE>
 
@@ -36,53 +45,34 @@ Rules:
 - Never reveal your reasoning or steps.
 - Always make final answers clean, well-formatted, and helpful.
 - For code or technical stuff, use triple backticks for code blocks and `inline code` for short snippets.
+- When designing gui, you want it to be nicely compact and simple and use elements only if needed or more efficient and simple for the user.
 """
 
+sessions = {}  # {token: {"messages": [...], "timestamps": [...], "memory": []}}
 
-sessions = {}  # {session_token: {"messages": [...], "timestamps": [..]}}
-
-# --- Helpers ---
+# ---------------- Helpers ----------------
 
 def get_session():
     token = request.headers.get("X-Session-Token")
     if not token or token not in sessions:
         token = secrets.token_hex(16)
-        sessions[token] = {"messages": [{"role": "system", "content": SYSTEM_PROMPT}], "timestamps": []}
+        sessions[token] = {"messages": [{"role": "system", "content": SYSTEM_PROMPT}],
+                           "timestamps": [], "memory": []}
     return token, sessions[token]
 
 def check_rate_limit(session):
     now = time.time()
-    timestamps = session["timestamps"]
-    timestamps[:] = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
-    if len(timestamps) >= MAX_REQUESTS:
+    session["timestamps"] = [t for t in session["timestamps"] if now - t < RATE_LIMIT_WINDOW]
+    if len(session["timestamps"]) >= MAX_REQUESTS:
         return False
-    timestamps.append(now)
+    session["timestamps"].append(now)
     return True
 
 def extract_research_query(text):
     m = re.search(r"RESEARCH_QUERY\s*:\s*(.+)", text, flags=re.IGNORECASE)
     return m.group(1).strip() if m else None
 
-def search_serpapi(query, num=5):
-    try:
-        from serpapi import GoogleSearch
-        api_key = os.getenv("SERPAPI_API_KEY")
-        if not api_key:
-            raise RuntimeError("SERPAPI_API_KEY not set.")
-        params = {"engine": "google", "q": query, "api_key": api_key, "num": num}
-        search = GoogleSearch(params)
-        res = search.get_dict()
-        hits = []
-        for r in (res.get("organic_results") or [])[:num]:
-            hits.append({
-                "title": r.get("title"),
-                "snippet": r.get("snippet"),
-                "link": r.get("link")
-            })
-        return hits
-    except Exception as e:
-        print("SerpAPI fallback:", e)
-        return search_duckduckgo(query, num)
+# ---------- External search ----------
 
 def search_duckduckgo(query, num=5):
     try:
@@ -108,41 +98,93 @@ def search_duckduckgo(query, num=5):
 def format_search_results(results):
     return "\n\n".join([f"**{r['title']}**\n{r['snippet']}\n{r['link']}" for r in results])
 
+# ---------- Vector DB ----------
+
+def load_vector_db():
+    if os.path.exists(VECTOR_DB_PATH):
+        with open(VECTOR_DB_PATH) as f:
+            return json.load(f)
+    return []
+
+def save_vector_db(vectors):
+    with open(VECTOR_DB_PATH, "w") as f:
+        json.dump(vectors, f)
+
+def embed_text(text):
+    # simple placeholder: in prod, use OpenAI embeddings
+    return text.lower().split()
+
+def vector_search(query, db, top_k=3):
+    q_vec = set(embed_text(query))
+    scored = [(entry, len(q_vec.intersection(set(embed_text(entry["content"])))) ) for entry in db]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    return [s[0]["content"] for s in scored[:top_k] if s[1]>0]
+
+# ---------- AI call ----------
+
 def ask_model(messages):
     resp = client.chat.completions.create(
         model=MODEL,
         messages=messages,
         temperature=TEMP,
-        max_tokens=MAX_TOKENS,
+        max_tokens=MAX_TOKENS
     )
     return resp.choices[0].message.content
+
+# ---------- Routes ----------
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
     token, session = get_session()
 
     if not check_rate_limit(session):
-        return jsonify({"error": "Rate limit reached. Try again later."}), 429
+        return jsonify({"error": "Rate limit reached. Try later."}), 429
 
     user_msg = request.json.get("message", "").strip()
     if not user_msg:
         return jsonify({"error": "Empty message"}), 400
 
+    # inject vector memory
+    vector_db = load_vector_db()
+    relevant_mem = vector_search(user_msg, vector_db)
+    for mem in relevant_mem:
+        session["messages"].append({"role": "system", "content": "Memory context:\n" + mem})
+
     session["messages"].append({"role": "user", "content": user_msg})
     reply = ask_model(session["messages"])
     session["messages"].append({"role": "assistant", "content": reply})
 
+    # optional research if AI requests it
     rq = extract_research_query(reply)
     if rq and rq.upper() != "NONE":
-        hits = search_serpapi(rq)
+        hits = search_duckduckgo(rq)
         sr = format_search_results(hits)
-        session["messages"].append({"role": "assistant", "content": f"TOOL: {sr}"})
-        session["messages"].append({"role": "user", "content": "Revise your answer using the results above."})
-        revised = ask_model(session["messages"])
-        session["messages"].append({"role": "assistant", "content": revised})
-        reply = revised
+        session["messages"].append({"role":"assistant", "content": f"TOOL: {sr}"})
+        session["messages"].append({"role":"user", "content":"Revise answer using above results."})
+        reply = ask_model(session["messages"])
+        session["messages"].append({"role":"assistant","content":reply})
+
+    # self-refinement
+    for _ in range(SELF_REFINE_PASSES):
+        session["messages"].append({"role":"user","content":"Reviewer: list issues (max 3) and produce improved answer only."})
+        reply = ask_model(session["messages"])
+        session["messages"].append({"role":"assistant","content":reply})
 
     return jsonify({"reply": reply, "session_token": token})
+
+# ---------- File ingestion ----------
+
+@app.route("/api/ingest_file", methods=["POST"])
+def ingest_file():
+    token, session = get_session()
+    file_data = request.json.get("content", "")
+    description = request.json.get("description", "File content")
+    vector_db = load_vector_db()
+    vector_db.append({"content": file_data, "description": description})
+    save_vector_db(vector_db)
+    return jsonify({"status": "ok", "entries": len(vector_db)})
+
+# ---------- Run ----------
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
