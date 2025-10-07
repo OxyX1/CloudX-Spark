@@ -24,28 +24,13 @@ VECTOR_DB_PATH = "./vector_db.json"  # simple local storage
 # ----------------
 
 SYSTEM_PROMPT = """You are CloudX, a god-tier coding assistant.
-You think deeply and reason internally — but **only** when the question involves coding, logic, math, or technical problem-solving.
-
-If the user is just chatting or asking something simple, reply normally without deep reasoning.
-
-When reasoning internally, never show your thought process — only output the final, polished answer in **Markdown** format.
-
-Behave like ChatGPT-5: concise, clear, friendly, reasoning in multiple steps when needed.
+Think deeply **only for technical tasks** (coding, math, logic), but never reveal internal reasoning.
+For casual chat, reply naturally.
 
 Use Markdown formatting for code snippets and structured responses.
-
-If unsure, provide well-reasoned hypotheses.
-
-Always think step-by-step before answering complex problems.
-
-If you need external info, end your private reasoning with:
-RESEARCH_QUERY: <query or NONE>
-
-Rules:
-- Never reveal your reasoning or steps.
-- Always make final answers clean, well-formatted, and helpful.
-- For code or technical stuff, use triple backticks for code blocks and `inline code` for short snippets.
-- When designing gui, you want it to be nicely compact and simple and use elements only if needed or more efficient and simple for the user.
+Use triple backticks for code blocks and inline code for short snippets.
+Keep replies concise, clear, and professional.
+End reasoning with RESEARCH_QUERY: <query or NONE> if external info is needed.
 """
 
 sessions = {}  # {token: {"messages": [...], "timestamps": [...], "memory": []}}
@@ -71,6 +56,11 @@ def check_rate_limit(session):
 def extract_research_query(text):
     m = re.search(r"RESEARCH_QUERY\s*:\s*(.+)", text, flags=re.IGNORECASE)
     return m.group(1).strip() if m else None
+
+def is_technical(message):
+    keywords = ["code", "python", "javascript", "function", "class", "algorithm",
+                "debug", "compile", "error", "logic", "calculate"]
+    return any(word.lower() in message.lower() for word in keywords)
 
 # ---------- External search ----------
 
@@ -164,11 +154,12 @@ def chat():
         reply = ask_model(session["messages"])
         session["messages"].append({"role":"assistant","content":reply})
 
-    # self-refinement
-    for _ in range(SELF_REFINE_PASSES):
-        session["messages"].append({"role":"user","content":"Reviewer: list issues (max 3) and produce improved answer only."})
-        reply = ask_model(session["messages"])
-        session["messages"].append({"role":"assistant","content":reply})
+    # self-refinement only if technical
+    if is_technical(user_msg):
+        for _ in range(SELF_REFINE_PASSES):
+            session["messages"].append({"role":"user","content":"Reviewer: list issues (max 3) and produce improved answer only."})
+            reply = ask_model(session["messages"])
+            session["messages"].append({"role":"assistant","content":reply})
 
     return jsonify({"reply": reply, "session_token": token})
 
