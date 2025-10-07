@@ -245,11 +245,6 @@ vector_db.append({
     "description": "Animated gradient hero section"
 })
 
-session["messages"].append({
-  "role": "system",
-  "content": "Refer to previously learned UI layouts for structure and Tailwind design language."
-})
-
 
 SYSTEM_PROMPT = """
 You are CloudX — a god-tier coding assistant.
