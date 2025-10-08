@@ -222,6 +222,111 @@ vector_db.append({
 
 vector_db.append({
     "content": """
+
+:root {
+  --bg-dark: #0f0f1a;
+  --bg-glow: linear-gradient(135deg, #111827, #1e1b4b);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --text-light: #e2e8f0;
+  --text-dim: #94a3b8;
+  --accent: #6366f1;
+  --accent-neon: #00ffe1;
+  --accent-pink: #ff007f;
+  --radius: 1.25rem;
+  --blur: 20px;
+  --shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  --transition: all 0.25s ease;
+}
+
+body {
+  background: var(--bg-glow);
+  color: var(--text-light);
+  font-family: "Poppins", "Inter", sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  transition: var(--transition);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-neon);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 40px rgba(0, 255, 225, 0.3);
+}
+
+button {
+  background: linear-gradient(90deg, var(--accent-neon), var(--accent-pink));
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.8rem 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px var(--accent-neon);
+  transition: var(--transition);
+}
+
+button:hover {
+  box-shadow: 0 0 25px var(--accent-pink);
+  transform: scale(1.05);
+}
+
+h1, h2, h3 {
+  background: linear-gradient(90deg, var(--accent-neon), var(--accent-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+a {
+  color: var(--accent-neon);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--accent-pink);
+  text-shadow: 0 0 10px var(--accent-pink);
+}
+
+  """,
+  "description": "Glassmorphic + Cyberpunk Theme"
+})
+
+
+vector_db.append({
+    "content": """
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  z-index: 0;
+}
+  """,
+  "description": "Noise Texture Overlay (for depth)"
+})
+
+vector_db.append({
+    "content": """
 <!-- Animated Gradient Header -->
 <header class="relative py-20 text-center overflow-hidden">
   <div class="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x"></div>
@@ -245,12 +350,47 @@ vector_db.append({
     "description": "Animated gradient hero section"
 })
 
+vector_db.append({
+    "content": """
+.glow-border {
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 10px var(--accent-neon);
+  border-radius: var(--radius);
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--accent-neon); }
+  50% { box-shadow: 0 0 18px var(--accent-pink); }
+}
+
+  """,
+  "description": "glowing borders + pulsing animation"
+})
+
 
 SYSTEM_PROMPT = """
 You are CloudX — a god-tier coding assistant.
 
 Think deeply only for technical tasks (code, math, logic).  
 Respond naturally for casual chat.
+
+Default ui theme:
+- Dark mode first: bg-[#0f172a] to #1e293b gradient.
+- Text: gray-200 to gray-400.
+- Accent: indigo-500 hover:indigo-400.
+- Use blur/glass backgrounds for cards.
+- Use rounded-xl and smooth transitions.
+- Avoid pure white — use neutral light colors if needed.
+
+When designing modern GUIs:
+- Default to glassmorphic + cyberpunk aesthetic.
+- Use gradients (neon blue/pink), blur effects, and glowing hover states.
+- Use semi-transparent containers with rounded-xl borders.
+- Combine futuristic colors (#00ffe1, #ff007f, #6366f1) with deep navy backgrounds.
+- Keep layout minimal, balanced, and symmetrical.
+- Avoid white backgrounds.
+
 
 For web design:
 - Use clean, modern layouts (Flexbox/Grid).
